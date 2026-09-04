@@ -2,8 +2,13 @@ package com.minecraft.launcher.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.minecraft.launcher.data.local.database.MinecraftLauncherDatabase
+import com.minecraft.launcher.data.local.preferences.AccountPreferences
+import com.minecraft.launcher.data.remote.api.MinecraftAuthApi
 import com.minecraft.launcher.data.remote.api.MinecraftVersionApi
+import com.minecraft.launcher.data.remote.api.MicrosoftAuthApi
 import com.minecraft.launcher.data.repository.AccountRepositoryImpl
 import com.minecraft.launcher.data.repository.GameRepositoryImpl
 import com.minecraft.launcher.data.repository.VersionRepositoryImpl
@@ -28,6 +33,9 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 val appModule = module {
+    // Context
+    single { androidContext() }
+
     // Database
     single {
         Room.databaseBuilder(
@@ -40,7 +48,10 @@ val appModule = module {
     single { get<MinecraftLauncherDatabase>().accountDao() }
     single { get<MinecraftLauncherDatabase>().gameProfileDao() }
 
-    // Network
+    // Preferences
+    single { AccountPreferences(androidContext()) }
+
+    // Network - OkHttp
     single {
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -54,6 +65,27 @@ val appModule = module {
             .build()
     }
 
+    // Retrofit - Minecraft Auth
+    single {
+        Retrofit.Builder()
+            .baseUrl("https://authserver.mojang.com/")
+            .client(get())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MinecraftAuthApi::class.java)
+    }
+
+    // Retrofit - Microsoft Auth
+    single {
+        Retrofit.Builder()
+            .baseUrl("https://login.live.com/oauth20_")
+            .client(get())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MicrosoftAuthApi::class.java)
+    }
+
+    // Retrofit - Minecraft Version
     single {
         Retrofit.Builder()
             .baseUrl("https://launcher.mojang.com/v1/objects/")
@@ -69,7 +101,7 @@ val appModule = module {
     }
 
     // Repositories
-    single<AccountRepository> { AccountRepositoryImpl(get()) }
+    single<AccountRepository> { AccountRepositoryImpl(get(), get(), get()) }
     single<VersionRepository> { VersionRepositoryImpl(get(), get()) }
     single<GameRepository> { GameRepositoryImpl(get()) }
 
@@ -79,7 +111,7 @@ val appModule = module {
     single { GameUseCase(get()) }
 
     // ViewModels
-    viewModel { AuthViewModel(get()) }
+    viewModel { AuthViewModel(get(), get()) }
     viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { VersionsViewModel(get()) }
     viewModel { SettingsViewModel() }
