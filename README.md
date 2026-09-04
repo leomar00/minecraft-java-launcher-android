@@ -2,129 +2,298 @@
 
 A feature-rich Minecraft Java Edition launcher for Android devices, built with Kotlin and Jetpack Compose.
 
-## Features
+## ✨ Features
 
 - 🎮 **Game Launcher**: Launch Minecraft Java Edition on Android
-- 🔐 **Account Management**: Microsoft/Launcher authentication support
+- 🔐 **Account Management**: Multiple authentication methods (Offline, Launcher, Microsoft OAuth)
 - 📦 **Version Management**: Install and manage multiple Minecraft versions
 - ⚙️ **Java Configuration**: Customizable JVM arguments and memory allocation
 - 🎨 **Modern UI**: Built with Jetpack Compose and Material Design 3
 - 🌓 **Dark Mode**: Full dark mode support
+- 🔒 **Secure Storage**: Encrypted token and account storage
 
-## Project Structure
+## 🏗️ Project Structure
 
 ```
-minecraft-java-launcher-android/
-├── app/
-│   ├── src/
-│   │   └── main/
-│   │       ├── kotlin/com/minecraft/launcher/
-│   │       │   ├── presentation/
-│   │       │   │   └── ui/
-│   │       │   │       ├── screens/        # UI Screens
-│   │       │   │       └── theme/          # Theme Configuration
-│   │       │   ├── domain/                 # Business Logic
-│   │       │   └── data/                   # Data & Networking
-│   │       └── res/
-│   │           ├── values/                 # Colors, Strings, Themes
-│   │           └── ...
-│   ├── build.gradle.kts
-│   └── AndroidManifest.xml
-├── build.gradle.kts
-├── settings.gradle.kts
-└── README.md
+app/src/main/kotlin/com/minecraft/launcher/
+├── domain/
+│   ├── model/          # Data models (MinecraftAccount, GameProfile, etc.)
+│   ├── repository/     # Repository interfaces
+│   └── usecase/        # Business logic (AuthUseCase, VersionUseCase)
+├── data/
+│   ├── local/
+│   │   ├── database/   # Room database configuration
+│   │   ├── entity/     # Database entities
+│   │   ├── dao/        # Data access objects
+│   │   └── preferences/# EncryptedSharedPreferences
+│   ├── remote/
+│   │   ├── api/        # Retrofit API clients
+│   │   └── dto/        # Data transfer objects
+│   └── repository/     # Repository implementations
+├── presentation/
+│   ├── ui/
+│   │   ├── screens/    # Compose screens
+│   │   └── theme/      # Theme configuration
+│   └── viewmodel/      # ViewModels (MVVM)
+└── di/                 # Dependency injection (Koin)
 ```
 
-## Screens
+## 🔐 Authentication System
+
+### Supported Login Methods
+1. **Offline Mode** - Local player with generated UUID
+2. **Launcher Account** - Username/password authentication
+3. **Microsoft OAuth** - Microsoft account integration (in development)
+
+### Key Features
+- Secure token storage with encryption
+- Automatic token refresh
+- Multi-account support
+- Account switching
+- Logout with token invalidation
+
+See [AUTHENTICATION.md](AUTHENTICATION.md) for detailed documentation.
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Language | Kotlin 1.9.10 |
+| UI Framework | Jetpack Compose + Material Design 3 |
+| Architecture | MVVM + Clean Architecture |
+| Database | Room + EncryptedSharedPreferences |
+| Networking | Retrofit + OkHttp |
+| DI | Koin 3.4.0 |
+| Async | Coroutines |
+| Min SDK | 24 (Android 7.0) |
+| Target SDK | 34 (Android 14) |
+
+## 🎯 Screens
 
 ### Home Screen
 - Account status and login button
 - Version selection
 - Quick statistics (installed versions, total size, playtime)
-- Launch button with progress indicator
+- Launch button with error handling
 
-### Profiles Screen
-- List of installed Minecraft versions
-- Add new version button
-- Empty state with install prompt
+### Authentication Screen
+- Current account display
+- Account switching
+- Multiple login methods
+- Token management
+
+### Profiles Screen (Version Management)
+- Installed versions list
+- Available versions list
+- Install/Uninstall functionality
+- Download progress tracking
 
 ### Settings Screen
+- Memory allocation slider (512-4096 MB)
 - Game directory configuration
-- Java memory allocation slider
+- VM arguments customization
 - Java version management
-- Custom VM arguments
-- Save and reset options
+- Save/Reset options
 
-## Tech Stack
-
-- **Language**: Kotlin
-- **UI Framework**: Jetpack Compose & Material Design 3
-- **Architecture**: MVVM (to be implemented)
-- **Networking**: Retrofit + OkHttp
-- **Database**: Room
-- **Dependency Injection**: Koin
-- **Async**: Coroutines
-- **Parsing**: Gson
-
-## Requirements
+## 📋 Requirements
 
 - Android 7.0 (API 24) or higher
 - Minimum 2GB RAM recommended
 - Java 11 or higher for development
+- Android Studio Giraffe or later
 
-## Building
+## 🚀 Getting Started
 
 ### Prerequisites
-- Android Studio Giraffe or later
-- Android SDK 34
-- Kotlin 1.9.10
-
-### Steps
-
-1. Clone the repository:
 ```bash
+# Install Android SDK 34
+# Install Kotlin 1.9.10
+# Install Android Studio Giraffe or later
+```
+
+### Clone and Build
+```bash
+# Clone repository
 git clone https://github.com/leomar00/minecraft-java-launcher-android.git
 cd minecraft-java-launcher-android
-```
 
-2. Open the project in Android Studio
-
-3. Build the project:
-```bash
+# Build project
 ./gradlew build
-```
 
-4. Run on emulator or device:
-```bash
+# Run on device/emulator
 ./gradlew installDebug
+
+# Run tests
+./gradlew test
 ```
 
-## Next Steps
+## 🔧 Configuration
 
-- [ ] Implement authentication system
-- [ ] Add version management API
-- [ ] Implement game launching mechanism
-- [ ] Add JVM runtime support
-- [ ] Implement game crash handler
-- [ ] Add mod/plugin support
+### API Configuration
+All API clients are configured in `AppModule.kt`:
+
+```kotlin
+// Minecraft Auth API
+Retrofit.Builder()
+    .baseUrl("https://authserver.mojang.com/")
+    .client(okHttpClient)
+    .build()
+    .create(MinecraftAuthApi::class.java)
+```
+
+### Game Directory
+Default location: `.minecraft` in app's external files directory
+
+Customizable via Settings screen
+
+### Database
+Room database with automatic schema versioning
+
+## 📦 Dependencies
+
+```gradle
+// Core
+androidx.core:core-ktx:1.12.0
+androidx.appcompat:appcompat:1.6.1
+
+// Compose & UI
+androidx.compose.ui:ui:1.5.4
+androidx.compose.material3:material3:1.1.1
+
+// Security
+androidx.security:security-crypto:1.1.0-alpha06
+
+// Network
+com.squareup.retrofit2:retrofit:2.9.0
+com.squareup.okhttp3:okhttp:4.11.0
+
+// Database
+androidx.room:room-runtime:2.6.0
+
+// DI
+io.insert-koin:koin-android:3.4.0
+
+// Async
+org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3
+```
+
+## 🔐 Security
+
+- ✅ HTTPS-only connections
+- ✅ Encrypted token storage
+- ✅ Secure password handling
+- ✅ No cleartext credentials in code
+- ✅ Certificate validation
+- ✅ Input validation and sanitization
+
+## 📊 Project Status
+
+### Completed ✅
+- [x] UI Framework setup
+- [x] Database persistence
+- [x] Dependency injection
+- [x] Authentication system
+- [x] Account management
+- [x] Settings screen
+
+### In Progress 🔄
+- [ ] Version downloading
+- [ ] Game launching
+- [ ] Microsoft OAuth integration
+
+### Planned 📋
+- [ ] Mod/Plugin support
+- [ ] Crash handling
+- [ ] Game logs viewer
 - [ ] Performance optimization
-- [ ] Unit and integration tests
+- [ ] Unit tests
+- [ ] Integration tests
 
-## Contributing
+## 📝 Usage
 
-Contributions are welcome! Please feel free to submit pull requests.
+### Offline Login
+```kotlin
+// In your Compose UI
+val authViewModel: AuthViewModel = koinViewModel()
 
-## License
+Button(
+    onClick = { authViewModel.loginOffline("Steve") }
+) {
+    Text("Login Offline")
+}
+```
 
-MIT License - see LICENSE file for details
+### Online Login
+```kotlin
+Button(
+    onClick = { authViewModel.loginWithUsername("user@email.com", "password") }
+) {
+    Text("Login")
+}
+```
 
-## Resources
+### Observe Authentication State
+```kotlin
+val authState by authViewModel.authState.collectAsState()
 
-- [Android Development Guide](https://developer.android.com)
-- [Jetpack Compose Documentation](https://developer.android.com/jetpack/compose)
-- [Minecraft API Documentation](https://wiki.vg)
-- [PojavLauncher (Reference Implementation)](https://github.com/PojavLauncherTeam/PojavLauncher)
+when (authState) {
+    is AuthViewModel.AuthState.Success -> {
+        // User logged in
+    }
+    is AuthViewModel.AuthState.Error -> {
+        // Show error
+    }
+    is AuthViewModel.AuthState.Loading -> {
+        // Show loading
+    }
+    else -> {}
+}
+```
 
-## Disclaimer
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📄 License
+
+MIT License - See LICENSE file for details
+
+## ⚠️ Disclaimer
 
 This project is not affiliated with Minecraft or Microsoft. Minecraft is a trademark of Microsoft Corporation.
+
+## 📚 Additional Documentation
+
+- [DEVELOPMENT.md](DEVELOPMENT.md) - Development roadmap and status
+- [AUTHENTICATION.md](AUTHENTICATION.md) - Authentication system details
+- [Android Docs](https://developer.android.com)
+- [Minecraft Wiki](https://wiki.vg)
+
+## 🆘 Troubleshooting
+
+### Build Issues
+- Clear build cache: `./gradlew clean`
+- Update Gradle: `./gradlew wrapper --gradle-version=8.2`
+- Sync dependencies: `./gradlew build --refresh-dependencies`
+
+### Runtime Issues
+- Check API endpoints are accessible
+- Verify internet connection
+- Check app permissions
+- Review Logcat for detailed errors
+
+## 📞 Support
+
+For issues and feature requests, please open a GitHub issue with:
+- Device/Emulator info
+- Android version
+- Steps to reproduce
+- Expected vs actual behavior
+
+---
+
+**Made with ❤️ by leomar00**
